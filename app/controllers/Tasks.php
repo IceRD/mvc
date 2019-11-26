@@ -1,20 +1,22 @@
 <?php
 
-class Tasks extends Controller{
+class Tasks extends Controller
+{
 
 	//Pagination
 	private $limit 	 = 3;	//Limit per page
-	private $pages;	
+	private $pages;
 	private $current_page;
 	private $total;
-	
+
 	// URL
 	private $url_path;
 
 	//state default
 	private $state = 1; //Pending 
 
-	public function __construct(){
+	public function __construct()
+	{
 
 		$this->taskModel = $this->model('Task');
 		$this->userModel = $this->model('User');
@@ -22,14 +24,15 @@ class Tasks extends Controller{
 		$this->pageInfo();
 	}
 
-	public function index(){
+	public function index()
+	{
 
-		$data['start'] = ($this->current_page -1) * $this->limit;
+		$data['start'] = ($this->current_page - 1) * $this->limit;
 		$data['limit'] = $this->limit;
 
 		$path = $this->url_path;
 
-		if(isset($path['sort'])) {
+		if (isset($path['sort'])) {
 			$data['sort'] = $path['sort'];
 		}
 
@@ -45,8 +48,8 @@ class Tasks extends Controller{
 		// Load pagination view
 		$pagination = $this->pagination();
 
-		$allow_edit = ( isset($_SESSION['user_id']) && in_array($_SESSION['user_role'], $this->getEditRule()) ) ? true : false;
-		
+		$allow_edit = (isset($_SESSION['user_id']) && in_array($_SESSION['user_role'], $this->getEditRule())) ? true : false;
+
 		$data = [
 			'tasks' => $tasks,
 			'pagination' => $pagination,
@@ -57,10 +60,11 @@ class Tasks extends Controller{
 		$this->view('tasks/index', $data);
 	}
 
-	public function add(){
-		if($_SERVER['REQUEST_METHOD']=='POST'){
+	public function add()
+	{
+		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 			// Sanitize POST Array
-			$_POST = filter_input_array(INPUT_POST,FILTER_SANITIZE_STRING);
+			$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
 			$data = [
 				'name' 		 => trim($_POST['name']),
@@ -69,38 +73,37 @@ class Tasks extends Controller{
 				'user_id' 	 => isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 1,
 				'state' 	 => $this->state,
 				'name_error' => '',
-				'email_error'=> '',
+				'email_error' => '',
 				'body_error' => ''
 			];
 
 			// Validate
-			if( empty($data['name']) ){
+			if (empty($data['name'])) {
 				$data['name_error'] = 'Please enter the name';
 			}
-			if( empty($data['email']) ){
+			if (empty($data['email'])) {
 				$data['email_error'] = 'Please enter the email';
-			}elseif( filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false){
+			} elseif (filter_var($data['email'], FILTER_VALIDATE_EMAIL) === false) {
 				$data['email_error'] = 'Email address not valid';
 			}
-			if( empty($data['body']) ){
+			if (empty($data['body'])) {
 				$data['body_error'] = 'Please enter the body';
 			}
 
 			// Make sure no errors
-			if ( empty($data['name_error']) && empty($data['email_error']) && empty($data['body_error']) ){
+			if (empty($data['name_error']) && empty($data['email_error']) && empty($data['body_error'])) {
 				// Validated
-				if( $this->taskModel->addTask($data) ){
+				if ($this->taskModel->addTask($data)) {
 					message('task_message', 'Task Added');
 					redirect('tasks');
-				} else{
+				} else {
 					die('Something went wrong');
 				}
 			} else {
 				// Load the view
 				$this->view('tasks/add', $data);
 			}
-
-		} else{
+		} else {
 			$data = [
 				'name' => '',
 				'email' => '',
@@ -108,23 +111,26 @@ class Tasks extends Controller{
 			];
 			$this->view('tasks/add', $data);
 		}
+	}
 
+	public function edit($id = null)
+	{
+		if (empty($id)) {
+			redirect('tasks');
 		}
 
-	public function edit($id){
+		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-		if($_SERVER['REQUEST_METHOD']=='POST'){
-
-			if(!isLoggedIn() ){
+			if (!isLoggedIn()) {
 				message('access_denied_message', 'Access is denied', 'alert alert-danger alert-dismissible fade show');
 				redirect('users/login');
 				exit;
 			}
-			
+
 			// Sanitize POST Array
-			$_POST = filter_input_array(INPUT_POST,FILTER_SANITIZE_STRING);
+			$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 			$state_map =  $this->taskModel->getState();
-			
+
 			$data = [
 				'id' => $id,
 				'name' => trim($_POST['name']),
@@ -140,43 +146,42 @@ class Tasks extends Controller{
 			];
 
 			// Validate
-			if( empty($data['name']) ){
+			if (empty($data['name'])) {
 				$data['name_error'] = 'Please enter the name';
 			}
-			if( empty($data['email']) ){
+			if (empty($data['email'])) {
 				$data['email_error'] = 'Please enter the email';
 			}
-			if( empty($data['body']) ){
+			if (empty($data['body'])) {
 				$data['body_error'] = 'Please enter the body';
 			}
-			if( $data['state'] < 1 ){
+			if ($data['state'] < 1) {
 				$data['state_error'] = 'Please enter the state';
 			}
 
 			// Make sure no errors
-			if ( empty($data['name_error']) && empty($data['email_error']) &&  empty($data['body_error']) &&  empty($data['state_error'])){
+			if (empty($data['name_error']) && empty($data['email_error']) &&  empty($data['body_error']) &&  empty($data['state_error'])) {
 				// Validated
-				if( $this->taskModel->updateTask($data) ){
+				if ($this->taskModel->updateTask($data)) {
 					message('task_message', 'Task Updated');
 					redirect('tasks');
-				} else{
-				die('Something went wrong');
+				} else {
+					die('Something went wrong');
 				}
 			} else {
 				// Load the view
 				$this->view('tasks/edit', $data);
 			}
-
-		} else{
+		} else {
 			// Get existing task from model
 			$task = $this->taskModel->getTaskById($id);
 			$state_map =  $this->taskModel->getState();
 
 			//Check for rule
-			if( !in_array($_SESSION['user_role'], $this->getEditRule()) ){
+			if (!in_array($_SESSION['user_role'], $this->getEditRule())) {
 				redirect('tasks');
 			}
-			
+
 			$data = [
 				'id' => $task->id,
 				'name' => $task->name,
@@ -191,14 +196,19 @@ class Tasks extends Controller{
 			];
 			$this->view('tasks/edit', $data);
 		}
-
 	}
 
-	public function show($id){
+	public function show($id = null)
+	{
+
+		if (empty($id)) {
+			redirect('tasks');
+		}
+
 		$task = $this->taskModel->getTaskById($id);
 		$user = $this->userModel->getUserById($task->user_id);
 
-		$allow_edit = ( isset($_SESSION['user_id']) && in_array($_SESSION['user_role'], $this->getEditRule()) ) ? true : false;
+		$allow_edit = (isset($_SESSION['user_id']) && in_array($_SESSION['user_role'], $this->getEditRule())) ? true : false;
 
 		$data = [
 			'task' => $task,
@@ -210,11 +220,12 @@ class Tasks extends Controller{
 	}
 
 
-	public function delete($id){
+	public function delete($id)
+	{
 
-		if($_SERVER['REQUEST_METHOD']=='POST') {
-			
-			if(!isLoggedIn() ){
+		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+			if (!isLoggedIn()) {
 				redirect('users/login');
 			}
 
@@ -222,22 +233,22 @@ class Tasks extends Controller{
 			$task = $this->taskModel->getTaskById($id);
 
 			//Check for rule
-			if( !in_array($_SESSION['user_role'], $this->getEditRule()) ){
+			if (!in_array($_SESSION['user_role'], $this->getEditRule())) {
 				redirect('tasks');
 			}
-			if( $this->taskModel->deleteTasks($id) ){
+			if ($this->taskModel->deleteTasks($id)) {
 				message('task_message', 'Task removed');
 				redirect('tasks');
 			} else {
 				die('Something went wrong');
 			}
-
 		} else {
 			redirect('tasks');
 		}
-	} 
+	}
 
-	private function pageInfo(){
+	private function pageInfo()
+	{
 
 		$this->total 	= $this->taskModel->getTotalTask();
 		$this->pages 	= ceil($this->total  / $this->limit);
@@ -245,10 +256,10 @@ class Tasks extends Controller{
 
 		$num = isset($this->url_path['page']) ? (int) $this->url_path['page'] : 1;
 		$this->current_page = max(min($num, $this->pages), 1);
-
 	}
 
-	private function pagination(){
+	private function pagination()
+	{
 
 		$path = $this->url_path;
 
@@ -268,28 +279,28 @@ class Tasks extends Controller{
 			}
 		}
 
-		for($i = 1; $i <= $this->pages; $i++){
+		for ($i = 1; $i <= $this->pages; $i++) {
 			$url['page'] = $i;
 			$pages[$i] = $this->link('mvc/tasks', $url);
 		}
-		
+
 		$previous = [];
-		if($this->current_page == 1){
+		if ($this->current_page == 1) {
 			$previous['state'] 	= false;
 			$url['page'] 		= $this->current_page;
 			$previous['link'] 	= $this->link('mvc/tasks', $url);
-		}else{
+		} else {
 			$previous['state'] 	= true;
 			$url['page'] 		= $this->current_page - 1;
 			$previous['link'] 	= $this->link('mvc/tasks', $url);
 		}
 
 		$next = [];
-		if($this->current_page == $this->pages){
+		if ($this->current_page == $this->pages) {
 			$next['state'] 	= false;
 			$url['page'] 	= $this->current_page;
 			$next['link'] 	= $this->link('mvc/tasks', $url);
-		}else{
+		} else {
 			$next['state'] 	= true;
 			$url['page'] 	= $this->current_page + 1;
 			$next['link'] 	= $this->link('mvc/tasks', $url);
@@ -306,7 +317,8 @@ class Tasks extends Controller{
 		return $data;
 	}
 
-	public function sort(){
+	public function sort()
+	{
 
 		$path = $this->url_path;
 
@@ -339,14 +351,12 @@ class Tasks extends Controller{
 			$data['current'] = $this->link('mvc/tasks', $url);
 		}
 
-		
-
-		foreach($filters as $filter){
+		foreach ($filters as $filter) {
 			$label = $filter['label'];
 			unset($filter['label']);
 
 			//$filter = array_merge($url, $filter);
-			if(isset($url['page']))
+			if (isset($url['page']))
 				$filter['page'] = $url['page'];
 
 			$link = $this->link('mvc/tasks', $filter);
@@ -354,10 +364,8 @@ class Tasks extends Controller{
 				'label' => $label,
 				'link' 	=> $link
 			];
-		} 
+		}
 
 		return $data;
-
 	}
-
 }
