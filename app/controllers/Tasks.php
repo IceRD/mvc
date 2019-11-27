@@ -107,7 +107,10 @@ class Tasks extends Controller
 			$data = [
 				'name' => '',
 				'email' => '',
-				'body' => ''
+				'body' => '',
+				'name_error' => '',
+				'email_error' => '',
+				'body_error' => '',
 			];
 			$this->view('tasks/add', $data);
 		}

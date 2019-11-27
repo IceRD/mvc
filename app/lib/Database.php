@@ -1,6 +1,7 @@
 <?php
 
-class Database{
+class Database
+{
 	private $host = DB_HOST;
 	private $user = DB_USER;
 	private $pass = DB_PASS;
@@ -10,34 +11,37 @@ class Database{
 	private $stmt;
 	private $error;
 
-	public function __construct(){
+	public function __construct()
+	{
 
-		$dsn='mysql:host=' . $this->host . ';charset=' . $this->charset . ';dbname=' . $this->dbname;
+		$dsn = 'mysql:host=' . $this->host . ';charset=' . $this->charset . ';dbname=' . $this->dbname;
 		$options = array(
 			PDO::ATTR_PERSISTENT => true,
 			PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
 			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
 			PDO::ATTR_CASE => PDO::CASE_LOWER
-			);
+		);
 
 		//Create PDO Instance
-		try{
+		try {
 			$this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
-		} catch(PDOException $e){
+		} catch (PDOException $e) {
 			$this->error = $e->getMessage();
 			echo $this->error;
 		}
 	}
 
 	// Prepare statement query
-	public function query($sql){
+	public function query($sql)
+	{
 		$this->stmt = $this->dbh->prepare($sql);
 	}
 
 	// Bind values
-	public function bind($param, $value, $type = null){
-		if(is_null($type)){
-			switch(true){
+	public function bind($param, $value, $type = null)
+	{
+		if (is_null($type)) {
+			switch (true) {
 				case is_int($value):
 					$type = \PDO::PARAM_INT;
 					break;
@@ -56,26 +60,30 @@ class Database{
 	}
 
 	// Execute the prepared statement
-	public function execute(){
+	public function execute()
+	{
 		return $this->stmt->execute();
 	}
 
-	public function resultSet(){
+	public function resultSet()
+	{
 		$this->execute();
 		return $this->stmt->fetchAll();
 	}
 
-	public function single(){
+	public function single()
+	{
 		$this->execute();
 		return $this->stmt->fetch();
 	}
 
-	public function rowCount(){
+	public function rowCount()
+	{
 		return $this->stmt->rowCount();
 	}
-	
-	public function fetchCount(){
+
+	public function fetchCount()
+	{
 		return $this->stmt->fetchColumn();
 	}
-
 }

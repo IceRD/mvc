@@ -4,7 +4,8 @@ class Controller
 {
 	private $editRule = ['admin'];
 
-	public function model($model){
+	public function model($model)
+	{
 		// Require model file
 		require_once '../app/models/' . $model . '.php';
 
@@ -16,18 +17,19 @@ class Controller
 	public function view($view, $data = [])
 	{
 		// Check for view file
-		if(file_exists('../app/views/' . $view . '.php')) {
-			require_once ('../app/views/' . $view . '.php');
-		} else{
+		if (file_exists('../app/views/' . $view . '.php')) {
+			require_once('../app/views/' . $view . '.php');
+		} else {
 			/// View does not exists
-			die ('View does not exists');
+			die('View does not exists');
 		}
 	}
 
 	/**
 	 * Return array
 	 */
-	protected function getEditRule(){
+	protected function getEditRule()
+	{
 		return $this->editRule;
 	}
 
@@ -35,14 +37,16 @@ class Controller
 	 * Get query path
 	 * Return array
 	 */
-	public function parseUrlQuery() {
+	public function parseUrlQuery()
+	{
 		parse_str(parse_url($_SERVER['REQUEST_URI'], PHP_URL_QUERY), $query);
 		return $query;
 	}
 
-	public function link($route, $args = ''){
+	public function link($route, $args = '')
+	{
 		$url = CURREN_PAGE . $route . '?';
-		
+
 		if ($args) {
 			if (is_array($args)) {
 				$url .= http_build_query($args);
@@ -51,7 +55,6 @@ class Controller
 			}
 		}
 
-		return $url; 
+		return $url;
 	}
-
 }
