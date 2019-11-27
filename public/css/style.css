@@ -1,8 +1,10 @@
-body {background: #FFF;}
+body {
+    background: #fff;
+}
 p.breakline {
     white-space: pre-wrap;
     word-break: normal;
 }
-.bd-navbar{
+.bd-navbar {
     background-color: #563d7c;
 }

@@ -1,14 +1,17 @@
 <?php
 
-class Users extends Controller{
+class Users extends Controller
+{
 
-	public function __construct(){
+	public function __construct()
+	{
 
 		$this->userModel = $this->model('User');
 		$this->taskModel = $this->model('Task');
 	}
-	
-	public function index(){
+
+	public function index()
+	{
 
 		$users = $this->userModel->getUsers();
 		$data = [
@@ -18,13 +21,14 @@ class Users extends Controller{
 		return $this->view('users/index', $data);
 	}
 
-	public function login(){
+	public function login()
+	{
 
-		if(isLoggedIn() ){
+		if (isLoggedIn()) {
 			redirect('tasks');
 		}
 
-		if ($_SERVER['REQUEST_METHOD']=='POST') {
+		if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 			$_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
@@ -36,23 +40,23 @@ class Users extends Controller{
 			];
 
 			// Validate login
-			if ( empty($data['login']) ) {
+			if (empty($data['login'])) {
 				$data['login_error'] = 'Login required';
-			} else if (!$this->userModel->getUserByLogin($data['login']) ) {
+			} else if (!$this->userModel->getUserByLogin($data['login'])) {
 				// User not found
 				$data['login_error'] = 'User not found!';
 			}
 
 			// Validate password
-			if ( empty($data['password']) ) {
+			if (empty($data['password'])) {
 				$data['password_error'] = 'Password required';
 			}
 
-			if ( empty($data['login_error']) && empty($data['password_error']) ) {
+			if (empty($data['login_error']) && empty($data['password_error'])) {
 				// Validated
 				// Check and set logged in user
 				$userAuthenticated = $this->userModel->login($data['login'], $data['password']);
-				if ( $userAuthenticated) {
+				if ($userAuthenticated) {
 					// Create session
 					$this->createUserSession($userAuthenticated);
 				} else {
@@ -81,7 +85,8 @@ class Users extends Controller{
 		}
 	}
 
-	public function logout(){
+	public function logout()
+	{
 		unset($_SESSION['user_id']);
 		unset($_SESSION['user_login']);
 		unset($_SESSION['user_name']);
@@ -90,7 +95,8 @@ class Users extends Controller{
 		redirect('users/login');
 	}
 
-	public function createUserSession($user){
+	public function createUserSession($user)
+	{
 		$_SESSION['user_id'] = $user->id;
 		$_SESSION['user_login'] = $user->login;
 		$_SESSION['user_name'] = $user->name;
@@ -98,12 +104,12 @@ class Users extends Controller{
 		redirect('tasks');
 	}
 
-	public function isLoggedIn(){
-		if ( isset($_SESSION['user_id']) && isset($_SESSION['user_name']) && isset($_SESSION['user_login']) && isset($_SESSION['user_role'])) {
+	public function isLoggedIn()
+	{
+		if (isset($_SESSION['user_id']) && isset($_SESSION['user_name']) && isset($_SESSION['user_login']) && isset($_SESSION['user_role'])) {
 			return true;
 		} else {
 			return false;
 		}
 	}
-
 }
